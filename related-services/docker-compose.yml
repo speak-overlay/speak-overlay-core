@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  s3gw:
+    image: quay.io/s3gw/s3gw:latest
+    container_name: s3gw
+    restart: unless-stopped
+    ports:
+      - "49172:7480"  # Puerto HTTP S3 personalizado
+    volumes:
+      - ./data:/data
+    environment:
+      - TZ=UTC
+
+  s3gw-ui:
+    image: quay.io/s3gw/s3gw-ui:latest
+    container_name: s3gw-ui
+    restart: unless-stopped
+    depends_on:
+      - s3gw
+    ports:
+      - "49173:8080"  # Puerto UI personalizado
+    environment:
+      - S3GW_SERVICE_URL=http://s3gw:7480

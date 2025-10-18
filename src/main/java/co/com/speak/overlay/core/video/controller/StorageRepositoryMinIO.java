@@ -1,6 +1,7 @@
 package co.com.speak.overlay.core.video.controller;
 
 import io.minio.MinioClient;
+import io.minio.ObjectWriteResponse;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +28,10 @@ public class StorageRepositoryMinIO {
     @Value("${files.bucket-name}")
     private String bucketName;
 
-    public void upload(String fileName, FileUploadRequest request) {
+    public FileUploadResponse upload(FileUploadRequest request) {
       try {
             Map<String, String> metadata = new HashMap<>();
-            metadata.put(FILE_NAME, fileName);
+            metadata.put(FILE_NAME, request.getFilename());
 
 
             InputStream inputStream = new ByteArrayInputStream(request.getBytes());
@@ -42,20 +43,20 @@ public class StorageRepositoryMinIO {
                     .userMetadata(metadata)
                     .build();
 
-            minioClient.putObject(build1);
-            log.info("file uploaded successfully on MinIO [{}] - [{}]", request.getFilename(), request.getObjectName());
-
+          ObjectWriteResponse objectWriteResponse = minioClient.putObject(build1);
+          log.info("file uploaded successfully on MinIO [{}] - [{}]", request.getFilename(), request.getObjectName());
 
             return FileUploadResponse
                     .builder()
-                    .name(sanitizedFileName)
-                    .resourse(request.getObjectName())
+                    .name(request.getObjectName())
+                    .resource(objectWriteResponse.object())
                     .build();
 
         } catch (Exception e) {
             e.printStackTrace();
             log.error("Error sending file to MinIO [{}] - [{}] ", request.getFilename(), request.getObjectName());
-            throw new GenericConflictException(FileManagerError.UPLOAD_FILE_ERROR);
+            //throw new GenericConflictException(FileManagerError.UPLOAD_FILE_ERROR);
+          throw  new RuntimeException("error " + e);
         }
     }
 /*

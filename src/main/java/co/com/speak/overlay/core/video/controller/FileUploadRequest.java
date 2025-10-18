@@ -11,4 +11,5 @@ public class FileUploadRequest {
     private String contentType;
     private Long contentLength;
     private String objectName;
+    private String transactionId;
 }
